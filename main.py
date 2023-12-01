@@ -15,7 +15,7 @@ emailRecipients = os.getenv("EMAIL_RECIPIENTS")
 
 includeDomains = True # check for the domain of a recently clicked URL that was malicious, e.g. my.domain.com in https://my.domain.com/abc123
 allowedURLHistory = 30 # How far back (days), to check recently clicked URLs that were previously allowed
-checkMaliciousURLs = 30 # Check the last X minutes of clicked malicious URLs against {allowedURLHistory} days worth of allowed clicked URL
+checkMaliciousURLs = 20 # Check the last X minutes of clicked malicious URLs against {allowedURLHistory} days worth of allowed clicked URL
 
 # 43200 mins = 30 days
 # 10800 mins =  7 days
@@ -42,6 +42,7 @@ def getURLS(bearer,scanResult="all",timeDelta=(60 * allowedURLHistory)):
         response = requests.request("POST", url, headers=headers, data=payload)
     except Exception as e:
         print(e)
+        return []
     else:
         response = json.loads(response.text)
         return response["data"][0]["clickLogs"]
@@ -72,42 +73,44 @@ def sendEmail(receivers=emailRecipients,subject="Empty",emailbody='Empty'):
 
 
 def runMe(bearer):
-    allowedClickedURL = getURLS(bearer,"clean") # get list of URLs previously allowed for the past 30 days
     maliciousURL = getURLS(bearer,"malicious",checkMaliciousURLs) # get malicious URLs clicked and blocked in the past 20 minutes
-    print("--------------------------------")
-
     maliciousURL = { each['url'] : each for each in maliciousURL }.values() # remove duplicates
-    #allowedClickedURL = { each['url'] : each for each in allowedClickedURL }.values() # remove duplicates
-
-    for badUrl in maliciousURL:
-    #for badUrl in badURLList:
-        badURLCount =0 
-        print(f"Checking if bad URL: {badUrl['url']} has been previously clicked (in the past {allowedURLHistory} days) and allowed:")
-        if "/" in badUrl["url"]:
-            badUrl["domain"] = badUrl["url"].split("/")[2]
-        else:
-            badUrl["domain"] = badUrl["url"]
-        for allowedUrl in allowedClickedURL: 
-            if includeDomains and (badUrl["url"] == allowedUrl["url"] or badUrl["domain"] in allowedUrl["url"]) and badUrl["date"] > allowedUrl["date"]:
-                print(f"Oops URL:{badUrl['url']} or Domain:{badUrl['domain']} has been clicked previously ({allowedUrl['url']})\n by {allowedUrl['userEmailAddress']}) \n URL was blocked on click:{badUrl['date']}\n URL was previously allowed on click:{allowedUrl['date']}")
-                print(f" Remediating {allowedUrl['messageId']}")
-                #
-                # add some code to remediate the messageID
-                #
-                if SMTPserver and SMTPuser and SMTPpassword and emailRecipients:
-                    sendEmail(emailRecipients,"Previously allowed URL now malicious",f"{badUrl['url']} was previously clicked and allowed, however was most recently observed as malicious.\nmessage-id:{badUrl['messageId']}")  
-                #
-            elif (badUrl["url"] == allowedUrl["url"] and badUrl["date"] > allowedUrl["date"]):
-                print(f"Oops :{badUrl['url']} {badUrl['domain']} | \n bad time:{badUrl['date']}\n is in {allowedUrl['url']}\n good time:{allowedUrl['date']}")
+    print(len(maliciousURL),maliciousURL)
+    if len(maliciousURL) > 0:
+        print("Malicious URL:",maliciousURL)
+        allowedClickedURL = getURLS(bearer,"clean") # get list of URLs previously allowed for the past 30 days
+        print("--------------------------------")
+        print(f"!! Found some bad URL clicked in teh past {checkMaliciousURLs} minutes.")
+        for badUrl in maliciousURL:
+            badURLCount =0
+            print(f"Checking if bad URL: {badUrl['url']} has been previously clicked (in the past {allowedURLHistory} days) and allowed:")
+            if "/" in badUrl["url"]:
+                badUrl["domain"] = badUrl["url"].split("/")[2]
             else:
-                badURLCount += 1
-        if badURLCount > 0:
-            if includeDomains:
-                print(f"Bad domain or URLs found, though: {badUrl['domain']} or {badUrl['url']} have not been previously clicked and allowed")
+                badUrl["domain"] = badUrl["url"]
+            for allowedUrl in allowedClickedURL: 
+                if includeDomains and (badUrl["url"] == allowedUrl["url"] or badUrl["domain"] in allowedUrl["url"]) and badUrl["date"] > allowedUrl["date"]:
+                    print(f"Oops URL:{badUrl['url']} or Domain:{badUrl['domain']} has been clicked previously ({allowedUrl['url']})\n by {allowedUrl['userEmailAddress']}) \n URL was blocked on click:{badUrl['date']}\n URL was previously allowed on click:{allowedUrl['date']}")
+                    print(f" Remediating {allowedUrl['messageId']}")
+                    #
+                    # add some code to remediate the messageID
+                    #
+                    if SMTPserver and SMTPuser and SMTPpassword and emailRecipients:
+                        sendEmail(emailRecipients,"Previously allowed URL now malicious",f"{badUrl['url']} was previously clicked and allowed, however was most recently observed as malicious.\nmessage-id:{badUrl['messageId']}")  
+                    #
+                elif (badUrl["url"] == allowedUrl["url"] and badUrl["date"] > allowedUrl["date"]):
+                    print(f"Oops :{badUrl['url']} {badUrl['domain']} | \n bad time:{badUrl['date']}\n is in {allowedUrl['url']}\n good time:{allowedUrl['date']}")
+                else:
+                    badURLCount += 1
+            if badURLCount > 0:
+                if includeDomains:
+                    print(f"Bad domain or URLs found, though: {badUrl['domain']} or {badUrl['url']} have not been previously clicked and allowed")
+                else:
+                    print(f"Bad URLs found, though: {badUrl['url']} has not been previously clicked and allowed")
             else:
-                print(f"Bad URLs found, though: {badUrl['url']} has not been previously clicked and allowed")
+                print("No recent malicious URLs clicked.")
         else:
-            print("No recent malicious URLs clicked.")
+            print(f"No malicious URL found in the past {checkMaliciousURLs} minutes")
 def main():
 
     bearer = auth.get_bearer_token() #request initial token
