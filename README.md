@@ -1,6 +1,7 @@
 ````
-DISCLAIMER: This is an unsupported, unofficial, experimental workflow leveraging the Mimecast 2.0 API
-TTP URL logs which collects allowed and blocked (malicious) end user URL clicks are cross-checks them so that administrators can be made aware if a malicious URL clicked was previously(in the past 30 days) clicked by an end user and allowed.
+DISCLAIMER: This is an unsupported, unofficial, experimental workflow leveraging the Mimecast 2.0 API.
+
+Mimecast TTP URL logs are collected and cross-checked so that administrators can be made aware if a malicious URL clicked in the the past 20 mins, was previously(in the past 30 days) clicked by an end user and allowed. Current resposne is an e-mail notification, but this could easily be to remediate the e-mail and add sender to 'Blocked Senders' profile group.
 
 https://developer.services.mimecast.com/docs/securityevents/1/routes/api/ttp/url/get-logs/post
 ````
