@@ -20,10 +20,10 @@ A dockerized python script that collects the last 30 days of clicked and 'allowe
 
 Try it yourself
 ````
-docker run -it -e EMAIL_RECIPIENTS="recipient1@gmail.com recipient2@gmail.com" -e SMTP_SERVER="192.168.89.1." -e SMTP_USER="sender@mydomain.com" -e SMTP_PW="YourP@ssw0rd" -e CLIENT_ID="<--Your Mimecast API Client ID-->" -e CLIENT_SECRET=<--Your Mimecast API Client Secret--> smck83/mimecast-ttp-url-monitor
+docker run -it -e EMAIL_RECIPIENTS="recipient1@gmail.com recipient2@gmail.com" -e SMTP_SERVER="192.168.89.1" -e SMTP_USER="sender@mydomain.com" -e SMTP_PW="YourP@ssw0rd" -e CLIENT_ID="<--Your Mimecast API Client ID-->" -e CLIENT_SECRET=<--Your Mimecast API Client Secret--> smck83/mimecast-ttp-url-monitor
 ````
 
-Example showing stdout
+Example showing stdout when check is `True`
 ![Example behaviour when a URL previously allowed is recently considered malicious](https://github.com/mimecast-scott/ttpurl-monitor/blob/main/ttpurlmonitor.png?raw=true)
 
 Example e-mail notification
