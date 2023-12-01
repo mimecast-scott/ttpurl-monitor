@@ -30,4 +30,4 @@ Example showing stdout when check is `True`
 ![Example behaviour when a URL previously allowed is recently considered malicious](https://github.com/mimecast-scott/ttpurl-monitor/blob/main/ttpurlmonitor.png?raw=true)
 
 Example e-mail notification
-![Example E-mail response](https://github.com/mimecast-scott/ttpurl-monitor/blob/main/ttpurlmonitorEmail.png?raw=true)
+![Example E-mail response](https://github.com/mimecast-scott/ttpurl-monitor/blob/main/ttpurlmonitorEmail1.png?raw=true)
