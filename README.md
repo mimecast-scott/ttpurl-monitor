@@ -1,6 +1,6 @@
 ````
 DISCLAIMER: This is an unsupported, unofficial, experimental workflow leveraging the Mimecast 2.0 API
-TTP URL logs which shows allowed and blocked (malicious) end user URL clicks are cross-checked for changes in behaviour.
+TTP URL logs which collects allowed and blocked (malicious) end user URL clicks are cross-checks them so that administrators can be made aware if a malicious URL clicked was previously clicked by an end user and allowed.
 
 https://developer.services.mimecast.com/docs/securityevents/1/routes/api/ttp/url/get-logs/post
 ````
