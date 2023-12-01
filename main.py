@@ -25,6 +25,9 @@ checkMaliciousURLs = 20 # minutes - Check the last X minutes of clicked maliciou
 
 def getURLS(bearer,scanResult="all",timeDelta=(60 * allowedURLHistory)):
     startDate = (datetime.datetime.now()-datetime.timedelta(minutes=timeDelta)).strftime("%Y-%m-%dT%H:%M:%S+0000") #"2023-10-01T14:49:18+0000"
+    #
+    # add logic to handle pagination - relevant when collecting lots od URL e.g, 30 days worth.
+    #
     url = "https://api.services.mimecast.com/api/ttp/url/get-logs"
 
     payload = json.dumps({
