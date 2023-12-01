@@ -16,8 +16,8 @@ SMTPpassword = os.getenv("SMTP_PW")
 emailRecipients = list((os.getenv("EMAIL_RECIPIENTS")).split(" "))
 
 includeDomains = True # check for the domain of a recently clicked URL that was malicious, e.g. my.domain.com in https://my.domain.com/abc123
-allowedURLHistory = 30 # How far back (days), to check recently clicked URLs that were previously allowed
-checkMaliciousURLs = 180 # Check the last X minutes of clicked malicious URLs against {allowedURLHistory} days worth of allowed clicked URL
+allowedURLHistory = 30 # days - How far back (days), to check recently clicked URLs that were previously allowed
+checkMaliciousURLs = 20 # minutes - Check the last X minutes of clicked malicious URLs against {allowedURLHistory} days worth of allowed clicked URL
 
 # 43200 mins = 30 days
 # 10800 mins =  7 days
@@ -103,11 +103,16 @@ def runMe(bearer):
                     #
                     # add some code to remediate the messageID
                     #
-                    emailBody.append(f"{allowedUrl['date']}\t\t\t{allowedUrl['userEmailAddress']}\t\t\t{allowedUrl['url'][:36]}...\t\t\t {allowedUrl['messageId']}"
-                    )
+                    emailBody.append(f"{allowedUrl['date']}\t\t\t{allowedUrl['userEmailAddress']}\t\t\t{allowedUrl['url'][:36]}...\t\t\t {allowedUrl['messageId']}")
                     #
                 elif (badUrl["url"] == allowedUrl["url"] and badUrl["date"] > allowedUrl["date"]):
                     print(f"Oops :{badUrl['url']} {badUrl['domain']} | \n bad time:{badUrl['date']}\n is in {allowedUrl['url']}\n good time:{allowedUrl['date']}")
+                    print(f" Remediating {allowedUrl['messageId']}")
+                    #
+                    # add some code to remediate the messageID
+                    #
+                    emailBody.append(f"{allowedUrl['date']}\t\t\t{allowedUrl['userEmailAddress']}\t\t\t{allowedUrl['url'][:36]}...\t\t\t {allowedUrl['messageId']}")
+                    #
                 else:
                     badURLCount += 1
             if SMTPserver and SMTPuser and SMTPpassword and emailRecipients and len(emailBody) > 1:
