@@ -1,10 +1,16 @@
+````
+DISCLAIMER: This is an unsupported, unofficial, experimental workflow leveraging the Mimecast 2.0 API
+TTP URL logs which shows allowed and blocked (malicious) end user URL clicks are cross-checked for changes in behaviour.
+
+https://developer.services.mimecast.com/docs/securityevents/1/routes/api/ttp/url/get-logs/post
+````
+
 # ttpurl-monitor
 A dockerized python script that collects the last 30 days of clicked and 'allowed' TTP URL logs and checks if any URLs clicked and blocked(malicious) in the past 20 minutes were previously clicked and allowed and takes action.
 
 | ENV VAR     | Description |
 | ----------- | ----------- |
 | CLIENT_ID | Mimecast API 2.0 Client ID |
-| CLIENT_SECRET | Mimecast API 2.0 Client Secret |
 | CLIENT_SECRET | Mimecast API 2.0 Client Secret |
 | SMTP_SERVER   | The SMTP server (or hostname) able to accept connect via TLS (TCP/587)       |
 | SMTP_USER   | The username of the SMTP user for the purpose of auth and SMTP FROM:        |
