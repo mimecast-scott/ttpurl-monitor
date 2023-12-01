@@ -24,4 +24,4 @@ docker run -it -e EMAIL_RECIPIENTS="recipient1@gmail.com recipient2@gmail.com" -
 ````
 
 Example showing stdout
-![Example behaviour when a URL previously allowed is recently considered malicious]https://github.com/mimecast-scott/ttpurl-monitor/blob/main/ttpurlmonitor.png?raw=true)
+![Example behaviour when a URL previously allowed is recently considered malicious](https://github.com/mimecast-scott/ttpurl-monitor/blob/main/ttpurlmonitor.png?raw=true)
