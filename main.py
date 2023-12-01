@@ -5,17 +5,19 @@ import datetime
 import time
 import smtplib
 from email.message import EmailMessage
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import os
 
 SMTPserver = os.getenv("SMTP_SERVER")
 SMTPsender = os.getenv("SMTP_USER")
 SMTPuser = os.getenv("SMTP_USER")
 SMTPpassword = os.getenv("SMTP_PW")
-emailRecipients = os.getenv("EMAIL_RECIPIENTS")
+emailRecipients = list((os.getenv("EMAIL_RECIPIENTS")).split(" "))
 
 includeDomains = True # check for the domain of a recently clicked URL that was malicious, e.g. my.domain.com in https://my.domain.com/abc123
 allowedURLHistory = 30 # How far back (days), to check recently clicked URLs that were previously allowed
-checkMaliciousURLs = 20 # Check the last X minutes of clicked malicious URLs against {allowedURLHistory} days worth of allowed clicked URL
+checkMaliciousURLs = 180 # Check the last X minutes of clicked malicious URLs against {allowedURLHistory} days worth of allowed clicked URL
 
 # 43200 mins = 30 days
 # 10800 mins =  7 days
@@ -49,13 +51,19 @@ def getURLS(bearer,scanResult="all",timeDelta=(60 * allowedURLHistory)):
 
 def sendEmail(receivers=emailRecipients,subject="Empty",emailbody='Empty'):
     msg = EmailMessage()
+    #msg = MIMEMultipart('alternative')
     msg['Subject'] = f"TTP URL Log Monitor - {subject}"
     msg['From'] = SMTPsender
-    receivers = " ".join(receivers)
-    msg['To'] = [receivers]
+    msg['To'] = list(receivers)
+    #text = emailbody
+    #html = emailbody
     msg.set_content(emailbody)
-
+    #part1 = MIMEText(text, 'plain')
+    #part2 = MIMEText(html, 'html')
+    #msg.attach(part1)
+    #msg.attach(part2)
     s = smtplib.SMTP(SMTPserver,25)
+    print(datetime.datetime.now(),"Trying to send e-mail notification")
     try:
         s.connect(SMTPserver,587)
         s.ehlo()
@@ -63,10 +71,10 @@ def sendEmail(receivers=emailRecipients,subject="Empty",emailbody='Empty'):
         s.ehlo()
         s.login(SMTPuser, SMTPpassword)
         s.send_message(msg)
-        print(datetime.datetime.now(),"Trying to send e-mail response")
+
     except Exception as e:
-        s.quit()
         print(datetime.datetime.now(),"Something went wrong:",e)
+        s.quit()
     else:
         print(datetime.datetime.now(),"Success! - E-mail response sent to ",receivers)
         s.quit()
@@ -75,9 +83,8 @@ def sendEmail(receivers=emailRecipients,subject="Empty",emailbody='Empty'):
 def runMe(bearer):
     maliciousURL = getURLS(bearer,"malicious",checkMaliciousURLs) # get malicious URLs clicked and blocked in the past 20 minutes
     maliciousURL = { each['url'] : each for each in maliciousURL }.values() # remove duplicates
-    print(len(maliciousURL),maliciousURL)
     if len(maliciousURL) > 0:
-        print("Malicious URL:",maliciousURL)
+        print("Found:",len(maliciousURL),"malicious URL clicked in the past",checkMaliciousURLs,"minutes")
         allowedClickedURL = getURLS(bearer,"clean") # get list of URLs previously allowed for the past 30 days
         print("--------------------------------")
         print(f"!! Found some bad URL clicked in teh past {checkMaliciousURLs} minutes.")
@@ -88,6 +95,7 @@ def runMe(bearer):
                 badUrl["domain"] = badUrl["url"].split("/")[2]
             else:
                 badUrl["domain"] = badUrl["url"]
+            emailBody = ["Malicious URL clicked(" + badUrl["date"] + "):\n" + badUrl["url"].replace(".","(.)").replace("http","hxxp") + "\n\nPreviously clicked and allowed:\nTimestamp\t \t \t Username \t \t \t  URL\t \t \t messageId"]
             for allowedUrl in allowedClickedURL: 
                 if includeDomains and (badUrl["url"] == allowedUrl["url"] or badUrl["domain"] in allowedUrl["url"]) and badUrl["date"] > allowedUrl["date"]:
                     print(f"Oops URL:{badUrl['url']} or Domain:{badUrl['domain']} has been clicked previously ({allowedUrl['url']})\n by {allowedUrl['userEmailAddress']}) \n URL was blocked on click:{badUrl['date']}\n URL was previously allowed on click:{allowedUrl['date']}")
@@ -95,22 +103,23 @@ def runMe(bearer):
                     #
                     # add some code to remediate the messageID
                     #
-                    if SMTPserver and SMTPuser and SMTPpassword and emailRecipients:
-                        sendEmail(emailRecipients,"Previously allowed URL now malicious",f"{badUrl['url']} was previously clicked and allowed, however was most recently observed as malicious.\nmessage-id:{badUrl['messageId']}")  
+                    emailBody.append(f"{allowedUrl['date']}\t\t\t{allowedUrl['userEmailAddress']}\t\t\t{allowedUrl['url'][:36]}...\t\t\t {allowedUrl['messageId']}"
+                    )
                     #
                 elif (badUrl["url"] == allowedUrl["url"] and badUrl["date"] > allowedUrl["date"]):
                     print(f"Oops :{badUrl['url']} {badUrl['domain']} | \n bad time:{badUrl['date']}\n is in {allowedUrl['url']}\n good time:{allowedUrl['date']}")
                 else:
                     badURLCount += 1
+            if SMTPserver and SMTPuser and SMTPpassword and emailRecipients and len(emailBody) > 1:
+                
+                sendEmail(emailRecipients,"Previously allowed URLs now malicious","\n".join(emailBody))              
             if badURLCount > 0:
                 if includeDomains:
                     print(f"Bad domain or URLs found, though: {badUrl['domain']} or {badUrl['url']} have not been previously clicked and allowed")
                 else:
                     print(f"Bad URLs found, though: {badUrl['url']} has not been previously clicked and allowed")
-            else:
-                print("No recent malicious URLs clicked.")
-        else:
-            print(f"No malicious URL found in the past {checkMaliciousURLs} minutes")
+    else:
+        print(f"No malicious URL found in the past {checkMaliciousURLs} minutes")
 def main():
 
     bearer = auth.get_bearer_token() #request initial token
