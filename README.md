@@ -4,6 +4,8 @@ DISCLAIMER: This is an unsupported, unofficial, experimental workflow leveraging
 Mimecast TTP URL logs are collected and cross-checked so that administrators can be made aware if a malicious URL clicked in the the past 20 mins, was previously(in the past 30 days) clicked by an end user and allowed. Current resposne is an e-mail notification, but this could easily be to remediate the e-mail and add sender to 'Blocked Senders' profile group.
 
 https://developer.services.mimecast.com/docs/securityevents/1/routes/api/ttp/url/get-logs/post
+
+NOTE: This script (1st Dec 23) does not yet support pagination, but can easily be added to handle collection of 30 days worth of TTP URL logs.
 ````
 
 # ttpurl-monitor
