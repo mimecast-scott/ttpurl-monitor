@@ -9,7 +9,7 @@ NOTE: This script (1st Dec 23) does not yet support pagination, but can easily b
 ````
 
 # ttpurl-monitor
-A dockerized python script that grabs the latest URLs that were blocked and classified malicious and cross checks them against the past 30 days of clicked and allowed (i.e. clean) URL. If there is a match, take action (e.g. send an e-mail notification).
+A dockerized python script that grabs the latest URLs every 20 minutes that were classified malicious & blocked and cross checks them against the past 30 days of clicked and allowed (i.e. clean) URL. If there is a match, take action (e.g. send an e-mail notification).
 
 
 | ENV VAR     | Description |
